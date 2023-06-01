@@ -1,5 +1,12 @@
+
+import tensorflow
+print("Num GPUs Available: ", len(tensorflow.config.list_physical_devices('GPU')))
+
+from tensorflow.python.client import device_lib 
+print(device_lib.list_local_devices())
+
 TrainingImagePath='./data/'
-TestingImagePath='./test/'
+TestingImagePath='./data/'
 
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -15,7 +22,7 @@ test_datagen = ImageDataGenerator()
 
 training_set = train_datagen.flow_from_directory(
         TrainingImagePath,
-        target_size=(64, 64),
+        target_size=(64,64),
         batch_size=32,
         class_mode='categorical')
 
@@ -24,7 +31,7 @@ len(training_set)
 
 test_set = test_datagen.flow_from_directory(
         TestingImagePath,
-        target_size=(64, 64),
+        target_size=(64,64),
         batch_size=32,
         class_mode='categorical')
 
@@ -61,16 +68,16 @@ from keras.layers import Dense
  
 
 classifier= Sequential()
-classifier.add(Convolution2D(32, kernel_size=(5, 5), strides=(1, 1), input_shape=(64,64,3), activation='relu'))
+classifier.add(Convolution2D(32, kernel_size=(5, 5), strides=(1,1), input_shape=(64,64,3), activation='relu'))
 classifier.add(MaxPool2D(pool_size=(2,2)))
-classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1, 1), activation='relu'))
+classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1,1), activation='relu'))
 classifier.add(MaxPool2D(pool_size=(2,2)))
-classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1, 1), activation='relu'))
+classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1,1), activation='relu'))
 classifier.add(MaxPool2D(pool_size=(2,2)))
-classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1, 1), activation='relu'))
-classifier.add(MaxPool2D(pool_size=(2,2)))
-classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1, 1), activation='relu'))
-classifier.add(MaxPool2D(pool_size=(2,2)))
+# classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1,1), activation='relu'))
+# classifier.add(MaxPool2D(pool_size=(2,2)))
+# classifier.add(Convolution2D(64, kernel_size=(5, 5), strides=(1,1), activation='relu'))
+# classifier.add(MaxPool2D(pool_size=(2,2)))
 
 classifier.add(Flatten())
 classifier.add(Dense(64, activation='relu'))
@@ -98,21 +105,22 @@ print("###### Total Time Taken: ", round((EndTime-StartTime)/60), 'Minutes #####
 import numpy as np
 from keras.preprocessing import image
 from keras.utils import img_to_array, load_img
- 
-ImagePath='./test/sad/1.jpg'
-test_image=load_img(ImagePath,target_size=(64, 64))
-test_image=img_to_array(test_image)
- 
-test_image=np.expand_dims(test_image,axis=0)
- 
-result=classifier.predict(test_image,verbose=0)
 
-print('Prediction is: ',ResultMap[np.argmax(result)])
+import os
+for file in os.listdir('./test'):
+    print('./test/'+file)
+    ImagePath='./test/'+file
+    test_image=load_img(ImagePath,target_size=(64,64))
+    test_image=img_to_array(test_image)
+    
+    test_image=np.expand_dims(test_image,axis=0)
+    
+    result=classifier.predict(test_image,verbose=0)
+
+    print('Prediction is: ',ResultMap[np.argmax(result)])
 
 
-
-
-
+      
 
 
 
@@ -126,7 +134,7 @@ def detect_faces():
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
     # Start capturing video from the webcam
-    video_capture = cv2.VideoCapture(1)
+    video_capture = cv2.VideoCapture(0)
 
     while True:
         # Read each frame of the video
@@ -144,6 +152,10 @@ def detect_faces():
 
         # Display the resulting frame with detected faces
         cv2.imshow('Video', frame)
+        # Save the image of the last detected face
+        if len(faces) > 0:
+            last_face = frame[y:y+h, x:x+w]
+            cv2.imwrite('./test/33.jpg', last_face)
 
         # Exit the loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord('q'):
